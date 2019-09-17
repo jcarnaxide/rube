@@ -3,27 +3,36 @@
 #include "servo.h"
 #include "button.h"
 
-UltraSonic *ultra1 = new UltraSonic(40, 38);
-Smoothing *ultra1Smooth = new Smoothing();
-int ultra1Thresh = 5;
+int Ultra1Echo = 40;
+int Ultra1Trigger = 38;
+UltraSonic *ultra1;
+Smoothing *ultra1Smooth;
+int ultra1Thresh = 2;
 
-UltraSonic *ultra2 = new UltraSonic(4, 5);
-Smoothing *ultra2Smooth = new Smoothing();
-int ultra2Thresh = 5;
+int Ultra2Echo = 4;
+int Ultra2Trigger = 5;
+UltraSonic *ultra2;
+Smoothing *ultra2Smooth;
+int ultra2Thresh = 4;
 
-Button* button = new Button(36);
+int buttonPin = 36;
+Button *button;
 
-int servo1StartPos = 0;
-ServoControl* servo1 = new ServoControl(10, servo1StartPos);
+int servo1Pin = 10;
+int servo1StartPos = 130;
+ServoControl *servo1;
 
-int servo2StartPos = 0;
-ServoControl* servo2 = new ServoControl(3, servo2StartPos);
+int servo2Pin = 3;
+int servo2StartPos = 100;
+ServoControl *servo2;
 
+int servo3Pin = 7;
 int servo3StartPos = 45;
-ServoControl* servo3 = new ServoControl(7, servo3StartPos);
+ServoControl *servo3;
 
-int servo4StartPos = 0;
-ServoControl* servo4 = new ServoControl(9, servo4StartPos);
+int servo4Pin = 9;
+int servo4StartPos = 10;
+ServoControl *servo4;
 
 enum Steps{
   step1,
@@ -34,35 +43,60 @@ enum Steps{
 Steps currentStep = step1;
 
 void setup() {
+  ultra1 = new UltraSonic(Ultra1Echo, Ultra1Trigger);
+  ultra1Smooth = new Smoothing();
 
+  ultra2 = new UltraSonic(Ultra2Echo, Ultra2Trigger);
+  ultra2Smooth = new Smoothing();
+
+  button = new Button(buttonPin);
+
+  servo1 = new ServoControl(servo1Pin, servo1StartPos);
+
+  servo2 = new ServoControl(servo2Pin, servo2StartPos);
+
+  servo3 = new ServoControl(servo3Pin, servo3StartPos);
+
+  servo4 = new ServoControl(servo4Pin, servo4StartPos);
+  Serial.begin(9600);
 }
 
-void loop() {
+int calculated;
 
+void loop() {
+  //Serial.println(calculated);
   switch(currentStep){
     case step1:
-      servo1->moveToSlowly(90);
+      servo1->moveTo(10);
+      delay(100);
+      servo1->moveTo(servo1StartPos);
       currentStep = step2;
       break;
       
     case step2:
-      if(ultra1Smooth->output(ultra1->centimeters()) < ultra1Thresh){
-        servo2->moveToSlowly(180);
+      /*if(ultra1Smooth->output(ultra1->inches()) < ultra1Thresh){
+        servo2->moveTo(10);
+        currentStep = step3;
+      }*/
+      calculated = (6762/(analogRead(A1)-9))-4;
+      if(calculated < 15){
+        servo2->moveTo(10);
         currentStep = step3;
       }
       break;
       
     case step3:
-      if(ultra2Smooth->output(ultra2->centimeters()) < ultra2Thresh){
-        servo3->moveToSlowly(75);
+      if(ultra2->inches() < ultra2Thresh){
+        servo3->moveTo(75);
+        delay(200);
+        //servo3->moveTo(45);
         currentStep = step4;
       }
       break;
       
     case step4:
-      if(button->Pressed()){
-        servo4->moveToSlowly(90);
-        return 0;
+      if(button->Pressed() != true){
+        servo4->moveTo(100);
       }
       break;
       

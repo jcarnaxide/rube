@@ -5,9 +5,9 @@ class ServoControl {
     ServoControl(const int pin, int startPos);
     void moveTo(int degree);
     void moveToSlowly(int degree);
+    int pos;
   private:
     Servo myservo;
-    int pos;
 };
 
 ServoControl::ServoControl(const int pin, int startPos){
